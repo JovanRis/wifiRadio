@@ -51,7 +51,10 @@ public class MainActivity extends Activity {
         final TextView localIP = (TextView) findViewById(R.id.txtView_LocalAddress);
         final EditText destAddress = (EditText) findViewById(R.id.txtEdit_destinationAddress);
         final EditText destPort = (EditText) findViewById(R.id.editText_destinationPort);
-        destAddress.setText("192.168.0.105");
+        final EditText destAddress2 = (EditText) findViewById(R.id.txtEdit_destAddress2);
+        final EditText destPort2 = (EditText) findViewById(R.id.txtEdit_destPort2);
+        destAddress.setText("192.168.");
+        destAddress2.setText("192.168.");
         String viewstring = "";
         for(int i=0;i<2;i++){
             viewstring += 256+adresa[i];
@@ -80,9 +83,25 @@ public class MainActivity extends Activity {
                     byteAddress[i] = (byte) Integer.parseInt(parts[i]);
                 }
                 int port = Integer.parseInt(destPort.getText().toString());
-                startStream(byteAddress,port);
-                byte[] testaddr = new byte[]{(byte)192, (byte)168, (byte)0, (byte)105 };
-                startStream(testaddr,22222);
+
+                int port2 =0;
+                byte[] byteAddress2 = new byte[4];
+                try {
+
+                String address2 = destAddress2.getText().toString();
+                String[] parts2 = address2.split("\\.");
+                byteAddress2 = new byte[4];
+                for(int i=0;i<parts2.length;i++){
+                    byteAddress2[i] = (byte) Integer.parseInt(parts2[i]);
+                }
+
+
+                    port2 = Integer.parseInt(destPort2.getText().toString());
+                }
+                catch (Exception e){
+                    Log.e("----------------------", e.toString());
+                }
+                startStream(byteAddress,port,byteAddress2,port2);
 
             }
         });
@@ -91,7 +110,7 @@ public class MainActivity extends Activity {
 
     }
 
-    public void startStream(byte[] destinationAddress,int destinationPort){
+    public void startStream(byte[] destinationAddress,int destinationPort,byte[] destinationAddress2,int destinationPort2){
         try {
             AudioManager audio =  (AudioManager) getSystemService(Context.AUDIO_SERVICE);
             audio.setMode(AudioManager.MODE_IN_COMMUNICATION);
@@ -104,11 +123,16 @@ public class MainActivity extends Activity {
             audioStream.associate(InetAddress.getByAddress(new byte[]{destinationAddress[0], destinationAddress[1], destinationAddress[2], destinationAddress[3]}), destinationPort);
             audioStream.join(audioGroup);
 
-            /*audioStream2.setCodec(AudioCodec.PCMU);
-            audioStream2.setMode(RtpStream.MODE_NORMAL);
-            //set receiver(vlc player) machine ip address(please update with your machine ip)
-            audioStream2.associate(InetAddress.getByAddress(new byte[]{(byte)192, (byte)168, (byte)0, (byte)105 }), 22222);
-            audioStream2.join(audioGroup);*/
+            if(destinationPort2 != 0)
+            {
+                audioStream2.setCodec(AudioCodec.PCMU);
+                audioStream2.setMode(RtpStream.MODE_NORMAL);
+                //set receiver(vlc player) machine ip address(please update with your machine ip)
+                audioStream2.associate(InetAddress.getByAddress(new byte[]{destinationAddress2[0], destinationAddress2[1], destinationAddress2[2], destinationAddress2[3]}), destinationPort2);
+                audioStream2.join(audioGroup);
+            }
+
+
 
 
 
